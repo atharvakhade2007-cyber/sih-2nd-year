@@ -1,0 +1,180 @@
+{% extends "core/base.html" %}
+{% block title %}Register as Worker — KaamConnect{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-brand-900 to-accent-600/30 flex items-center justify-center p-4 py-12">
+  <div class="w-full max-w-2xl animate-slide-up">
+    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-slate-800 to-brand-900 px-8 py-7">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-accent-500/20 rounded-xl flex items-center justify-center">
+            <svg class="w-7 h-7 text-accent-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-white">Join as a Worker</h1>
+            <p class="text-slate-300 text-sm">Your application will be reviewed by a Coop Admin</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="px-8 py-8">
+        <form method="post" action="{% url 'core:worker_register' %}" class="space-y-5">
+          {% csrf_token %}
+
+          <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wide">Personal Info</h3>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">First Name</label>
+              <input type="text" name="first_name" value="{{ post_data.first_name|default:'' }}"
+                     class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-400 text-sm" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">Last Name</label>
+              <input type="text" name="last_name" value="{{ post_data.last_name|default:'' }}"
+                     class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-400 text-sm" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">Username <span class="text-red-500">*</span></label>
+              <input type="text" name="username" value="{{ post_data.username|default:'' }}" required
+                     class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-400 text-sm" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">Email <span class="text-red-500">*</span></label>
+              <input type="email" name="email" value="{{ post_data.email|default:'' }}" required
+                     class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-400 text-sm" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">Phone Number</label>
+              <input type="tel" name="phone_number" value="{{ post_data.phone_number|default:'' }}"
+                     class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-400 text-sm" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">City</label>
+              <input type="text" name="city" value="{{ post_data.city|default:'' }}"
+                     class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-400 text-sm" placeholder="Delhi" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">PIN Code</label>
+              <input type="text" name="pincode" value="{{ post_data.pincode|default:'' }}"
+                     class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-400 text-sm" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                Location
+                <button type="button" id="detect-location-btn" class="ml-1 text-xs text-brand-600 hover:underline font-normal">Auto-detect</button>
+              </label>
+              <input type="text" id="location-display" readonly placeholder="Lat, Lon"
+                     class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-400 text-xs cursor-not-allowed" />
+              <input type="hidden" name="latitude" id="lat-input" />
+              <input type="hidden" name="longitude" id="lon-input" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div x-data="{ show: false }">
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">Password <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <input :type="show ? 'text' : 'password'" name="password1" required
+                       class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-400 text-sm pr-10" />
+                <button type="button" @click="show = !show" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">Confirm Password <span class="text-red-500">*</span></label>
+              <input type="password" name="password2" required
+                     class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-400 text-sm" />
+            </div>
+          </div>
+
+          <hr class="border-slate-100" />
+          <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wide">Professional Details</h3>
+
+          <!-- Skills -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Skills / Service Categories <span class="text-red-500">*</span>
+            </label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {% for cat in categories %}
+              <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-brand-50 cursor-pointer transition-all has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+                <input type="checkbox" name="skills" value="{{ cat.slug }}"
+                       {% if post_data.skills and cat.slug in post_data.skills %}checked{% endif %}
+                       class="w-4 h-4 text-brand-600 border-slate-300 rounded focus:ring-brand-400" />
+                <span class="text-sm font-medium text-slate-700">{{ cat.name }}</span>
+              </label>
+              {% empty %}
+              <p class="text-sm text-slate-400 col-span-3">No categories found. Contact admin.</p>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">Hourly Rate (₹)</label>
+              <input type="number" name="hourly_rate" value="{{ post_data.hourly_rate|default:'' }}" min="0" step="10"
+                     class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-400 text-sm" placeholder="200" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">Service Radius (km)</label>
+              <input type="number" name="service_radius_km" value="{{ post_data.service_radius_km|default:'10' }}" min="1" max="100"
+                     class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-400 text-sm" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">Coop Member ID</label>
+              <input type="text" name="coop_member_id" value="{{ post_data.coop_member_id|default:'' }}"
+                     class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-400 text-sm" placeholder="Optional" />
+            </div>
+          </div>
+
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
+            <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            <div>
+              <p class="text-sm font-semibold text-amber-800">Pending Verification</p>
+              <p class="text-xs text-amber-700 mt-0.5">Your account will be reviewed by a Cooperative Admin before you can accept jobs. This usually takes 24–48 hours.</p>
+            </div>
+          </div>
+
+          <button type="submit"
+                  class="w-full bg-gradient-to-r from-slate-800 to-brand-700 hover:from-brand-700 hover:to-brand-600 text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all text-sm">
+            Submit Application
+          </button>
+        </form>
+
+        <p class="text-center text-sm text-slate-500 mt-5">
+          Already registered?
+          <a href="{% url 'core:login' %}" class="text-brand-600 font-semibold hover:text-brand-700">Sign In</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.getElementById('detect-location-btn').addEventListener('click', function() {
+    if (!navigator.geolocation) return;
+    this.textContent = 'Detecting...';
+    navigator.geolocation.getCurrentPosition(pos => {
+      document.getElementById('lat-input').value = pos.coords.latitude.toFixed(6);
+      document.getElementById('lon-input').value = pos.coords.longitude.toFixed(6);
+      document.getElementById('location-display').value = pos.coords.latitude.toFixed(4) + ', ' + pos.coords.longitude.toFixed(4);
+      this.textContent = '✓ Detected';
+    }, () => { this.textContent = 'Auto-detect'; });
+  });
+</script>
+{% endblock %}

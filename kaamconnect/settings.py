@@ -128,7 +128,14 @@ MAILERS = {
 }
 
 AUTH_USER_MODEL = "core.CustomUser"
-LOGIN_REDIRECT_URL = "core:service_list"
+LOGIN_URL = "core:login"
+LOGIN_REDIRECT_URL = "core:customer_dashboard"
 LOGOUT_REDIRECT_URL = "core:service_list"
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Media files (uploaded profile pictures, etc.)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 
