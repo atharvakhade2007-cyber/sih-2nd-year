@@ -1,0 +1,128 @@
+{% extends "core/base.html" %}
+
+{% block title %}Post a Job - KaamConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+
+    <!-- Back Link -->
+    <a href="{% url 'core:job_posting_list' %}" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-brand-600 transition-colors">
+        <i class="fa-solid fa-arrow-left mr-2"></i> Back to Marketplace
+    </a>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-8 rounded-3xl shadow-xl">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-accent-500/20 rounded-xl flex items-center justify-center">
+                <i class="fa-solid fa-briefcase text-accent-400 text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-extrabold tracking-tight">Post a Custom Job</h1>
+                <p class="text-slate-300 text-sm">Describe your needs and find matching workers.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+        <form method="POST" action="{% url 'core:job_posting_create' %}" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Title -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Job Title *</label>
+                <input type="text" name="title" required value="{{ form.title.value|default:'' }}"
+                       class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all"
+                       placeholder="e.g. Need an electrician for ceiling fan installation">
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Job Description *</label>
+                <textarea name="description" rows="4" required
+                          class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all"
+                          placeholder="Describe your requirements in detail...">{{ form.description.value|default:'' }}</textarea>
+            </div>
+
+            <!-- Category -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Service Category *</label>
+                <select name="category" required class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all cursor-pointer">
+                    <option value="">-- Select Category --</option>
+                    {% for cat in form.fields.category.queryset %}
+                        <option value="{{ cat.id }}" {% if form.category.value|stringformat:"s" == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                    {% empty %}
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Date & Budget -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Preferred Date</label>
+                    <input type="date" name="preferred_date" value="{{ form.preferred_date.value|default:'' }}"
+                           class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Budget Estimate (₹)</label>
+                    <input type="number" name="budget_estimate" min="0" step="10" value="{{ form.budget_estimate.value|default:'' }}"
+                           class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all"
+                           placeholder="Estimated budget in INR">
+                </div>
+            </div>
+
+            <!-- Address -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Service Address</label>
+                <textarea name="service_address" rows="2"
+                          class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all"
+                          placeholder="Location where service is needed...">{{ form.service_address.value|default:'' }}</textarea>
+            </div>
+
+            <!-- Location -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                    Location
+                    <button type="button" id="detect-location-btn" class="ml-1 text-xs text-brand-600 hover:text-brand-700 font-normal underline">Auto-detect</button>
+                </label>
+                <input type="text" id="location-display" readonly placeholder="Click auto-detect"
+                       class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 text-xs cursor-not-allowed" />
+                <input type="hidden" name="latitude" id="lat-input" />
+                <input type="hidden" name="longitude" id="lon-input" />
+            </div>
+
+            <!-- Submit -->
+            <div class="pt-4 flex items-center justify-end gap-4">
+                <a href="{% url 'core:job_posting_list' %}" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="px-8 py-3 bg-accent-500 hover:bg-accent-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-accent-500/30 transition-all hover:scale-[1.01] flex items-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> Post Job
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('detect-location-btn').addEventListener('click', function() {
+    if (!navigator.geolocation) {
+        alert('Geolocation not supported by your browser.');
+        return;
+    }
+    this.textContent = 'Detecting...';
+    navigator.geolocation.getCurrentPosition(pos => {
+        document.getElementById('lat-input').value = pos.coords.latitude.toFixed(6);
+        document.getElementById('lon-input').value = pos.coords.longitude.toFixed(6);
+        document.getElementById('location-display').value = pos.coords.latitude.toFixed(4) + ', ' + pos.coords.longitude.toFixed(4);
+        this.textContent = 'Detected';
+    }, () => {
+        this.textContent = 'Auto-detect';
+        alert('Could not detect location. Please enter manually if needed.');
+    });
+});
+</script>
+{% endblock %}

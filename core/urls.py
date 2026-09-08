@@ -25,7 +25,10 @@ urlpatterns = [
 
     # ─── Worker ───────────────────────────────────────────────────────────────
     path("worker/dashboard/", views.worker_dashboard_view, name="worker_dashboard"),
+    path("worker/earnings/", views.worker_earnings_view, name="worker_earnings"),
     path("worker/bookings/<uuid:booking_id>/action/", views.booking_action_view, name="booking_action"),
+    path("workers/", views.worker_list_view, name="worker_list"),
+    path("workers/<uuid:worker_id>/", views.worker_profile_view, name="worker_profile"),
 
     # ─── Marketplace ──────────────────────────────────────────────────────────
     path("marketplace/", views.job_posting_list_view, name="job_posting_list"),

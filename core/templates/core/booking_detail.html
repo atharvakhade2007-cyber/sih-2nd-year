@@ -1,0 +1,229 @@
+{% extends "core/base.html" %}
+
+{% block title %}Booking #{{ booking.id|stringformat:".8s" }} - KaamConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+
+    <!-- Back Link -->
+    <a href="{% url 'core:customer_dashboard' %}" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-brand-600 transition-colors">
+        <i class="fa-solid fa-arrow-left mr-2"></i> Back to Dashboard
+    </a>
+
+    <!-- Booking Header -->
+    <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-brand-900 text-white p-8 rounded-3xl shadow-xl">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div class="space-y-2">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                    {{ booking.service.category.name }}
+                </span>
+                <h1 class="text-3xl font-extrabold tracking-tight">{{ booking.service.title }}</h1>
+                <p class="text-slate-300 text-sm">Booking #{{ booking.id|stringformat:".8s" }}</p>
+            </div>
+            <div class="bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 text-right">
+                <span class="text-xs font-medium text-slate-300 block">Total Amount</span>
+                <span class="text-3xl font-extrabold text-white">₹{{ booking.total_amount }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step Tracker -->
+    {% if booking.status != 'CANCELLED' %}
+    <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+            <i class="fa-solid fa-route text-brand-600"></i>
+            <span>Booking Progress</span>
+        </h2>
+        <div class="flex items-center justify-between max-w-2xl mx-auto">
+            {% with step=booking.status_step %}
+            <!-- Step 1: Booking Placed -->
+            <div class="flex flex-col items-center">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white {% if step >= 1 %}step-complete{% else %}step-inactive{% endif %}">
+                    {% if step > 1 %}<i class="fa-solid fa-check text-lg"></i>{% else %}1{% endif %}
+                </div>
+                <span class="text-xs font-semibold text-slate-600 mt-2 whitespace-nowrap">Booking Placed</span>
+                <span class="text-[10px] text-slate-400 mt-0.5">Step 1</span>
+            </div>
+            <div class="flex-1 h-1 mx-2 {% if step >= 2 %}bg-brand-500{% else %}bg-slate-200{% endif %} rounded-full"></div>
+
+            <!-- Step 2: Worker Accepted -->
+            <div class="flex flex-col items-center">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white {% if step >= 2 %}step-complete{% elif step == 2 %}step-active{% else %}step-inactive{% endif %}">
+                    {% if step > 2 %}<i class="fa-solid fa-check text-lg"></i>{% else %}2{% endif %}
+                </div>
+                <span class="text-xs font-semibold text-slate-600 mt-2 whitespace-nowrap">Worker Accepted</span>
+                {% if booking.worker %}
+                <span class="text-[10px] text-brand-600 mt-0.5 font-medium">{{ booking.worker.user.get_full_name|default:booking.worker.user.username }}</span>
+                {% endif %}
+            </div>
+            <div class="flex-1 h-1 mx-2 {% if step >= 3 %}bg-brand-500{% else %}bg-slate-200{% endif %} rounded-full"></div>
+
+            <!-- Step 3: In Progress -->
+            <div class="flex flex-col items-center">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white {% if step >= 3 %}step-complete{% elif step == 3 %}step-active{% else %}step-inactive{% endif %}">
+                    {% if step > 3 %}<i class="fa-solid fa-check text-lg"></i>{% else %}3{% endif %}
+                </div>
+                <span class="text-xs font-semibold text-slate-600 mt-2 whitespace-nowrap">In Progress</span>
+                <span class="text-[10px] text-slate-400 mt-0.5">Step 3</span>
+            </div>
+            <div class="flex-1 h-1 mx-2 {% if step >= 4 %}bg-brand-500{% else %}bg-slate-200{% endif %} rounded-full"></div>
+
+            <!-- Step 4: Completed -->
+            <div class="flex flex-col items-center">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white {% if step >= 4 %}step-complete{% else %}step-inactive{% endif %}">
+                    {% if step >= 4 %}<i class="fa-solid fa-check text-lg"></i>{% else %}4{% endif %}
+                </div>
+                <span class="text-xs font-semibold text-slate-600 mt-2 whitespace-nowrap">Completed</span>
+                <span class="text-[10px] text-slate-400 mt-0.5">Step 4</span>
+            </div>
+            {% endwith %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Worker Info (if assigned) -->
+    {% if booking.worker %}
+    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-user-gear text-brand-600"></i>
+            <span>Assigned Worker</span>
+        </h2>
+        <div class="flex items-center gap-4">
+            <a href="{% url 'core:worker_profile' booking.worker.id %}" class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-600 to-emerald-500 text-white flex items-center justify-center font-bold text-xl shadow-lg">
+                {{ booking.worker.user.username|slice:":1"|upper }}
+            </a>
+            <div>
+                <a href="{% url 'core:worker_profile' booking.worker.id %}" class="font-bold text-slate-900 hover:text-brand-600 transition-colors">{{ booking.worker.user.get_full_name|default:booking.worker.user.username }}</a>
+                <div class="flex items-center gap-3 text-sm text-slate-500 mt-0.5">
+                    <span class="text-amber-500 font-bold"><i class="fa-solid fa-star text-xs"></i> {{ booking.worker.rating }}</span>
+                    <span>•</span>
+                    <span>{{ booking.worker.total_reviews_count }} reviews</span>
+                    <span>•</span>
+                    {% if booking.worker.verification_status == 'VERIFIED' %}
+                        <span class="text-emerald-600 font-semibold"><i class="fa-solid fa-circle-check"></i> Verified</span>
+                    {% else %}
+                        <span class="text-amber-600 font-semibold"><i class="fa-solid fa-clock"></i> {{ booking.worker.get_verification_status_display }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Booking Details -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Schedule & Location -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-calendar-days text-brand-600"></i>
+                <span>Schedule & Location</span>
+            </h2>
+            <div class="space-y-3 text-sm">
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-clock text-slate-400 mt-0.5"></i>
+                    <div>
+                        <p class="font-medium text-slate-900">{{ booking.scheduled_time|date:"l, M d, Y" }}</p>
+                        <p class="text-slate-500">{{ booking.scheduled_time|date:"h:i A" }}</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-location-dot text-slate-400 mt-0.5"></i>
+                    <p class="text-slate-700">{{ booking.service_address }}</p>
+                </div>
+                {% if booking.special_instructions %}
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-note-sticky text-slate-400 mt-0.5"></i>
+                    <p class="text-slate-600 italic">{{ booking.special_instructions }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Payment & Fee Breakdown -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-receipt text-brand-600"></i>
+                <span>Payment Details</span>
+            </h2>
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Gross Amount</span>
+                    <span class="font-semibold text-slate-900">₹{{ fees.gross }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Platform Fee (15%)</span>
+                    <span class="text-slate-700">₹{{ fees.platform_fee }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Coop Dividend (15%)</span>
+                    <span class="text-slate-700">₹{{ fees.coop_fee }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Worker Payout (70%)</span>
+                    <span class="text-slate-700">₹{{ fees.worker_payout }}</span>
+                </div>
+                <hr class="border-slate-200">
+                <div class="flex justify-between text-base">
+                    <span class="font-bold text-slate-900">Total</span>
+                    <span class="font-extrabold text-brand-600">₹{{ booking.total_amount }}</span>
+                </div>
+            </div>
+            <div class="pt-2">
+                {% if booking.payment_status == 'PAID' %}
+                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        <i class="fa-solid fa-check-circle mr-1.5"></i> Payment Complete
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                        <i class="fa-solid fa-clock mr-1.5"></i> Awaiting Payment
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+        <div class="flex flex-wrap items-center gap-4">
+            {% if booking.status == 'PENDING' %}
+                <a href="{% url 'core:payment' booking.id %}" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl shadow-md transition-all">
+                    <i class="fa-solid fa-credit-card mr-2"></i> Pay Now
+                </a>
+                <form method="POST" action="{% url 'core:booking_cancel' booking.id %}" onsubmit="return confirm('Are you sure you want to cancel this booking?')">
+                    {% csrf_token %}
+                    <button type="submit" class="px-6 py-3 bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-sm rounded-xl border border-red-200 transition-colors">
+                        <i class="fa-solid fa-ban mr-2"></i> Cancel Booking
+                    </button>
+                </form>
+            {% elif booking.status == 'ACCEPTED' and booking.payment_status != 'PAID' %}
+                <a href="{% url 'core:payment' booking.id %}" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl shadow-md transition-all">
+                    <i class="fa-solid fa-credit-card mr-2"></i> Pay Now
+                </a>
+            {% elif booking.status == 'COMPLETED' and booking.payment_status != 'PAID' %}
+                <a href="{% url 'core:payment' booking.id %}" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl shadow-md transition-all">
+                    <i class="fa-solid fa-credit-card mr-2"></i> Pay Now
+                </a>
+            {% endif %}
+
+            {% if booking.payment_status == 'PAID' %}
+                <a href="{% url 'core:payment_receipt' booking.id %}" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition-colors">
+                    <i class="fa-solid fa-receipt mr-2"></i> View Receipt
+                </a>
+            {% endif %}
+
+            {% if booking.status == 'COMPLETED' and booking.payment_status == 'PAID' and not has_review %}
+                <a href="{% url 'core:review_create' booking.id %}" class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm rounded-xl shadow-md transition-all">
+                    <i class="fa-solid fa-star mr-2"></i> Leave a Review
+                </a>
+            {% endif %}
+
+            {% if has_review %}
+                <span class="inline-flex items-center px-4 py-2 bg-emerald-50 text-emerald-700 font-semibold text-sm rounded-xl border border-emerald-200">
+                    <i class="fa-solid fa-check-circle mr-2"></i> Reviewed
+                </span>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

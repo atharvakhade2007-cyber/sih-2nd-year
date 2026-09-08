@@ -1,0 +1,222 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ worker_profile.user.get_full_name|default:worker_profile.user.username }} - KaamConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+
+    <!-- Profile Header -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <!-- Cover -->
+        <div class="h-32 bg-gradient-to-r from-brand-600 via-brand-500 to-emerald-500"></div>
+
+        <!-- Profile Info -->
+        <div class="px-8 pb-8 -mt-12">
+            <div class="flex flex-col md:flex-row items-start md:items-end gap-6">
+                <!-- Avatar -->
+                <div class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-brand-600 to-emerald-500 text-white flex items-center justify-center font-bold text-4xl shadow-xl border-4 border-white">
+                    {{ worker_profile.user.username|slice:":1"|upper }}
+                </div>
+
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <h1 class="text-2xl font-extrabold text-slate-900">{{ worker_profile.user.get_full_name|default:worker_profile.user.username }}</h1>
+                        {% if worker_profile.verification_status == "VERIFIED" %}
+                            <span class="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                                <span>Identity Verified</span>
+                            </span>
+                        {% elif worker_profile.verification_status == "PENDING" %}
+                            <span class="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                <i class="fa-solid fa-clock text-amber-600"></i>
+                                <span>Pending Verification</span>
+                            </span>
+                        {% endif %}
+                        {% if worker_profile.coop_member_id %}
+                            <span class="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                                <i class="fa-solid fa-building-columns text-purple-600"></i>
+                                <span>Coop Member</span>
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex items-center gap-4 mt-2 text-sm text-slate-500">
+                        {% if worker_profile.user.city %}
+                            <span><i class="fa-solid fa-location-dot mr-1"></i> {{ worker_profile.user.city }}</span>
+                        {% endif %}
+                        <span class="text-amber-500 font-bold"><i class="fa-solid fa-star"></i> {{ worker_profile.rating }}</span>
+                        <span>{{ worker_profile.total_reviews_count }} reviews</span>
+                        <span>{{ completed_count }} jobs completed</span>
+                    </div>
+                </div>
+
+                {% if user.is_authenticated and user.role == 'CUSTOMER' %}
+                <a href="{% url 'core:service_list' %}" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl shadow-md transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-plus"></i> Book This Worker
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <div class="text-2xl font-extrabold text-amber-500">{{ worker_profile.rating }}</div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Avg Rating</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <div class="text-2xl font-extrabold text-emerald-600">{{ completed_count }}</div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Jobs Done</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <div class="text-2xl font-extrabold text-brand-600">{{ worker_profile.total_reviews_count }}</div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Reviews</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <div class="text-2xl font-extrabold text-slate-900">{{ worker_profile.service_radius_km }}km</div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Service Radius</div>
+        </div>
+    </div>
+
+    <!-- Details & Skills -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- About & Rate -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-user text-brand-600"></i>
+                <span>About</span>
+            </h2>
+            <div class="space-y-3 text-sm">
+                {% if worker_profile.hourly_rate %}
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-indian-rupee-sign text-slate-400 w-5"></i>
+                    <div>
+                        <span class="text-slate-500">Hourly Rate</span>
+                        <span class="font-bold text-slate-900 ml-2">₹{{ worker_profile.hourly_rate }}/hr</span>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-map-marker text-slate-400 w-5"></i>
+                    <div>
+                        <span class="text-slate-500">Service Radius</span>
+                        <span class="font-bold text-slate-900 ml-2">{{ worker_profile.service_radius_km }} km</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-signal text-slate-400 w-5"></i>
+                    <div>
+                        <span class="text-slate-500">Status</span>
+                        <span class="ml-2 px-2.5 py-0.5 rounded-full text-xs font-semibold
+                            {% if worker_profile.availability_status == 'AVAILABLE' %}bg-emerald-100 text-emerald-800 border border-emerald-200
+                            {% elif worker_profile.availability_status == 'BUSY' %}bg-amber-100 text-amber-800 border border-amber-200
+                            {% else %}bg-slate-100 text-slate-700 border border-slate-200{% endif %}">
+                            {{ worker_profile.get_availability_status_display }}
+                        </span>
+                    </div>
+                </div>
+                {% if worker_profile.user.bio %}
+                <div class="pt-2 border-t border-slate-100">
+                    <p class="text-slate-600 italic">{{ worker_profile.user.bio }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Skills -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-tools text-brand-600"></i>
+                <span>Skills & Services</span>
+            </h2>
+            <div class="flex flex-wrap gap-2">
+                {% for skill in worker_profile.skills %}
+                    <span class="px-4 py-2 bg-brand-50 text-brand-700 text-sm font-semibold rounded-xl border border-brand-100">
+                        {{ skill }}
+                    </span>
+                {% empty %}
+                    <p class="text-sm text-slate-400">No skills listed yet.</p>
+                {% endfor %}
+            </div>
+
+            <!-- Verification Badges -->
+            <div class="pt-4 border-t border-slate-100 space-y-3">
+                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wide">Verification Badges</h3>
+                <div class="space-y-2">
+                    {% if worker_profile.verification_status == "VERIFIED" %}
+                    <div class="flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-shield-check text-emerald-500"></i>
+                        <span class="text-slate-700 font-medium">Identity Verified</span>
+                    </div>
+                    {% if worker_profile.skills %}
+                    <div class="flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-award text-emerald-500"></i>
+                        <span class="text-slate-700 font-medium">Skills Verified</span>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                    {% if worker_profile.coop_member_id %}
+                    <div class="flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-building-columns text-purple-500"></i>
+                        <span class="text-slate-700 font-medium">Cooperative Member</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-star text-amber-500"></i>
+                <span>Customer Reviews ({{ reviews.count }})</span>
+            </h2>
+        </div>
+
+        {% if reviews %}
+            <div class="divide-y divide-slate-100">
+                {% for review in reviews %}
+                <div class="p-6">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-semibold text-sm text-slate-900">{{ review.customer.get_full_name|default:review.customer.username }}</span>
+                                <span class="text-xs text-slate-400">{{ review.created_at|date:"M d, Y" }}</span>
+                            </div>
+                            <!-- Star Display -->
+                            <div class="flex items-center gap-0.5 mb-2">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-star text-slate-200 text-sm"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                <span class="text-sm font-bold text-slate-900 ml-2">{{ review.rating }}.0</span>
+                            </div>
+                            {% if review.comment %}
+                                <p class="text-sm text-slate-600">{{ review.comment }}</p>
+                            {% endif %}
+                            {% if review.booking %}
+                            <p class="text-xs text-slate-400 mt-2">
+                                Service: {{ review.booking.service.title }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12 text-slate-500 text-sm">
+                <i class="fa-solid fa-comments text-3xl text-slate-300 block mb-2"></i>
+                No reviews yet.
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

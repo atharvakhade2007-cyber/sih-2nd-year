@@ -1,0 +1,121 @@
+{% extends "core/base.html" %}
+
+{% block title %}My Earnings - KaamConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Back Link -->
+    <a href="{% url 'core:worker_dashboard' %}" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-brand-600 transition-colors">
+        <i class="fa-solid fa-arrow-left mr-2"></i> Back to Dashboard
+    </a>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white p-8 rounded-3xl shadow-xl">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
+                <i class="fa-solid fa-wallet text-emerald-300 text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-extrabold tracking-tight">My Earnings</h1>
+                <p class="text-slate-300 text-sm">Track your income, payouts, and dividend shares.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Earnings Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Lifetime Income</span>
+            <div class="text-3xl font-extrabold text-emerald-600 mt-2">₹{{ earnings_data.total_lifetime }}</div>
+            <div class="text-xs text-slate-500 mt-1">Total earned to date</div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">This Month</span>
+            <div class="text-3xl font-extrabold text-brand-600 mt-2">₹{{ earnings_data.monthly_earnings }}</div>
+            <div class="text-xs text-slate-500 mt-1">Current month earnings</div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Pending Payout</span>
+            <div class="text-3xl font-extrabold text-amber-600 mt-2">₹{{ earnings_data.pending_payout }}</div>
+            <div class="text-xs text-slate-500 mt-1">Awaiting distribution</div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Dividend Shares</span>
+            <div class="text-3xl font-extrabold text-purple-600 mt-2">₹{{ earnings_data.dividend_shares }}</div>
+            <div class="text-xs text-slate-500 mt-1">Coop dividend pool allocation</div>
+        </div>
+    </div>
+
+    <!-- Revenue Split Visualization -->
+    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie text-purple-600"></i>
+            <span>Your Earning Split Per Job</span>
+        </h2>
+        <div class="max-w-xl">
+            <div class="flex rounded-full overflow-hidden h-5 shadow-inner">
+                <div class="bg-emerald-500 h-full" style="width: 70%"></div>
+                <div class="bg-blue-500 h-full" style="width: 15%"></div>
+                <div class="bg-purple-500 h-full" style="width: 15%"></div>
+            </div>
+            <div class="flex justify-between mt-3 text-xs font-semibold">
+                <span class="text-emerald-600"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Your Payout (70%)</span>
+                <span class="text-blue-600"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Platform (15%)</span>
+                <span class="text-purple-600"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Coop Dividend (15%)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Earnings History -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-100">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-brand-600"></i>
+                <span>Earnings History</span>
+            </h2>
+        </div>
+
+        {% if earnings_history %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                            <th class="p-4 pl-6">Date</th>
+                            <th class="p-4">Service</th>
+                            <th class="p-4">Gross Amount</th>
+                            <th class="p-4">Your Payout (70%)</th>
+                            <th class="p-4">Payout Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-sm">
+                        {% for earning in earnings_history %}
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="p-4 pl-6 text-slate-600 font-mono text-xs">{{ earning.created_at|date:"M d, Y" }}</td>
+                            <td class="p-4 font-medium text-slate-900">{{ earning.booking.service.title }}</td>
+                            <td class="p-4 text-slate-700">₹{{ earning.gross_amount }}</td>
+                            <td class="p-4 font-bold text-emerald-600">₹{{ earning.worker_payout }}</td>
+                            <td class="p-4">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold
+                                    {% if earning.payout_status == 'PAID' %}bg-emerald-100 text-emerald-800 border border-emerald-200
+                                    {% elif earning.payout_status == 'PROCESSING' %}bg-blue-100 text-blue-800 border border-blue-200
+                                    {% elif earning.payout_status == 'PENDING' %}bg-amber-100 text-amber-800 border border-amber-200
+                                    {% else %}bg-slate-100 text-slate-700 border border-slate-200{% endif %}">
+                                    {{ earning.get_payout_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-12 text-slate-500 text-sm">
+                <i class="fa-solid fa-wallet text-3xl text-slate-300 block mb-2"></i>
+                No earnings recorded yet. Complete your first job to start earning!
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

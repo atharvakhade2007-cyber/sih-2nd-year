@@ -1,0 +1,186 @@
+{% extends "core/base.html" %}
+
+{% block title %}Verified Cooperative Workers — KaamConnect{% endblock %}
+
+{% block content %}
+<!-- Hero Header -->
+<section class="bg-gradient-to-br from-slate-900 via-slate-800 to-brand-900 text-white py-12 px-4 sm:px-6 lg:px-8 mb-8 shadow-lg">
+    <div class="max-w-7xl mx-auto text-center space-y-4">
+        <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-300 border border-brand-500/30">
+            <i class="fa-solid fa-user-check"></i>
+            <span>Verified Local Professionals</span>
+        </span>
+        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Cooperative Worker Directory</h1>
+        <p class="max-w-2xl mx-auto text-slate-300 text-sm sm:text-base">Browse skilled workers across your city, compare ratings, and view their locations on the live map.</p>
+        
+        <!-- Search Bar -->
+        <div class="max-w-3xl mx-auto pt-4">
+            <form method="GET" action="{% url 'core:worker_list' %}" class="flex flex-col sm:flex-row gap-2 bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/20">
+                <div class="relative flex-grow">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <input type="text" name="q" value="{{ search_query }}" placeholder="Search by name, city, or skill (e.g. Rajesh, Plumber, Mumbai)..." class="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <button type="submit" class="px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm rounded-xl transition-colors shadow-md">
+                    Find Workers
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Main Container -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+
+    <!-- Skill Category Filter Tabs -->
+    {% if categories %}
+    <div class="flex items-center space-x-2 overflow-x-auto pb-2 no-scrollbar">
+        <a href="{% url 'core:worker_list' %}" class="px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all {% if not selected_category %}bg-brand-600 text-white shadow-md shadow-brand-600/20{% else %}bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700{% endif %}">
+            All Workers
+        </a>
+        {% for cat in categories %}
+        <a href="?category={{ cat.slug }}" class="px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all {% if selected_category == cat.slug %}bg-brand-600 text-white shadow-md shadow-brand-600/20{% else %}bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700{% endif %}">
+            {% if cat.icon %}<i class="{{ cat.icon }} mr-1.5"></i>{% endif %}{{ cat.name }}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Interactive Worker Location Map -->
+    <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 rounded-xl flex items-center justify-center">
+                    <i class="fa-solid fa-map-location-dot text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900 dark:text-white">Live Worker Locations</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Interactive map showing available verified worker locations across your area</p>
+                </div>
+            </div>
+            <span class="text-xs font-semibold px-3 py-1 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-800">
+                <i class="fa-solid fa-circle text-[8px] mr-1 animate-pulse"></i> {{ map_workers|length }} Active Pins
+            </span>
+        </div>
+
+        <div id="worker-map" class="w-full h-80 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-inner z-10"></div>
+    </div>
+
+    <!-- Worker Cards Grid -->
+    {% if workers %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for worker in workers %}
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group">
+            <div class="p-6 space-y-4">
+                <!-- Header: Avatar + Verification -->
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-500 text-white flex items-center justify-center font-bold text-lg shadow-md">
+                            {{ worker.user.username|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+                                {{ worker.user.get_full_name|default:worker.user.username }}
+                            </h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400"><i class="fa-solid fa-location-dot mr-1"></i>{{ worker.user.city|default:"Local Area" }}</p>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        Verified
+                    </span>
+                </div>
+
+                <!-- Bio & Skills -->
+                <p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                    {{ worker.user.bio|default:"Skilled cooperative worker committed to providing reliable service." }}
+                </p>
+
+                <!-- Skill Tags -->
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                    {% for skill in worker.skills %}
+                    <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                        {{ skill|title }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Card Footer: Hourly Rate & Action -->
+            <div class="p-6 pt-0 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 mt-4 flex items-center justify-between">
+                <div>
+                    <div class="flex items-center space-x-1 text-amber-500 text-xs font-bold mb-1">
+                        <i class="fa-solid fa-star"></i>
+                        <span>{{ worker.rating }}</span>
+                        <span class="text-slate-400 font-normal">({{ worker.total_reviews_count }})</span>
+                    </div>
+                    <span class="text-xs font-extrabold text-slate-900 dark:text-white">
+                        {% if worker.hourly_rate %}₹{{ worker.hourly_rate }}/hr{% else %}Standard Rate{% endif %}
+                    </span>
+                </div>
+                <a href="{% url 'core:worker_profile' worker.id %}" class="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs rounded-xl shadow-md shadow-brand-600/20 transition-all hover:scale-[1.02]">
+                    <span>View Profile</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 p-8 space-y-4">
+        <div class="w-16 h-16 bg-slate-100 dark:bg-slate-700 text-slate-400 rounded-full flex items-center justify-center mx-auto text-2xl">
+            <i class="fa-solid fa-user-slash"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white">No Workers Found</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">No verified workers match your search filters right now.</p>
+        <a href="{% url 'core:worker_list' %}" class="inline-flex items-center px-4 py-2 bg-slate-800 dark:bg-slate-700 text-white text-xs font-semibold rounded-lg hover:bg-slate-700 transition-colors">
+            Clear Filters
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var mapWorkers = {{ map_workers|safe }};
+        var defaultLat = 19.0760;
+        var defaultLng = 72.8777;
+
+        if (mapWorkers.length > 0) {
+            defaultLat = mapWorkers[0].lat;
+            defaultLng = mapWorkers[0].lng;
+        }
+
+        var map = L.map('worker-map').setView([defaultLat, defaultLng], 11);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        var bounds = [];
+
+        mapWorkers.forEach(function(w) {
+            bounds.push([w.lat, w.lng]);
+            var popupContent = `
+                <div class="p-1 space-y-1 font-sans">
+                    <h4 class="font-bold text-sm text-slate-900">${w.name}</h4>
+                    <p class="text-xs text-slate-500"><i class="fa-solid fa-location-dot text-brand-500 mr-1"></i>${w.city}</p>
+                    <p class="text-xs text-amber-600 font-semibold"><i class="fa-solid fa-star mr-1"></i>${w.rating} (${w.reviews} reviews)</p>
+                    <p class="text-xs font-bold text-slate-800">₹${w.rate}/hr</p>
+                    <a href="/workers/${w.id}/" class="inline-block mt-2 px-3 py-1 bg-brand-600 text-white text-xs font-bold rounded-lg no-underline hover:bg-brand-700 transition-colors">View Profile</a>
+                </div>
+            `;
+            L.marker([w.lat, w.lng])
+                .addTo(map)
+                .bindPopup(popupContent);
+        });
+
+        if (bounds.length > 1) {
+            map.fitBounds(bounds, { padding: [30, 30] });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

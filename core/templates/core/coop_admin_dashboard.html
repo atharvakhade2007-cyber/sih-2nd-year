@@ -17,33 +17,164 @@
         </div>
     </div>
 
-    <!-- Community Financial Overview Metrics -->
+    <!-- Key Metrics Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gross Platform Revenue</span>
             <div class="text-2xl font-extrabold text-slate-900">₹{{ total_gross }}</div>
+            <div class="text-xs text-slate-500">from {{ booking_stats.total }} bookings</div>
         </div>
-
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Platform Commission</span>
             <div class="text-2xl font-extrabold text-blue-600">₹{{ total_commission }}</div>
+            <div class="text-xs text-slate-500">15% of gross</div>
         </div>
-
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Dividend Pool Allocation</span>
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Dividend Pool</span>
             <div class="text-2xl font-extrabold text-purple-600">₹{{ total_dividend_pool }}</div>
+            <div class="text-xs text-slate-500">15% of gross</div>
         </div>
-
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Worker Payouts</span>
             <div class="text-2xl font-extrabold text-emerald-600">₹{{ total_worker_payouts }}</div>
+            <div class="text-xs text-slate-500">70% of gross</div>
+        </div>
+    </div>
+
+    <!-- Booking Stats & Cancellation Rate -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <div class="text-2xl font-extrabold text-slate-900">{{ booking_stats.total }}</div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Total Bookings</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <div class="text-2xl font-extrabold text-emerald-600">{{ booking_stats.completed }}</div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Completed</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <div class="text-2xl font-extrabold text-blue-600">{{ booking_stats.accepted }}</div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Accepted</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <div class="text-2xl font-extrabold text-amber-600">{{ booking_stats.pending }}</div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Pending</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <div class="text-2xl font-extrabold text-red-600">{{ cancellation_rate }}%</div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Cancellation Rate</div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Booking Status Distribution -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+            <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-brand-600"></i>
+                <span>Booking Status Distribution</span>
+            </h2>
+            <div class="relative" style="height: 280px;">
+                <canvas id="bookingStatusChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Monthly Revenue -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+            <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-chart-bar text-brand-600"></i>
+                <span>Monthly Revenue (Last 6 Months)</span>
+            </h2>
+            <div class="relative" style="height: 280px;">
+                <canvas id="monthlyRevenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Services & Top Workers -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Top Demanded Services -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-slate-100">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-fire text-accent-500"></i>
+                    <span>Top Demanded Services</span>
+                </h2>
+            </div>
+            {% if top_services %}
+                <div class="divide-y divide-slate-100">
+                    {% for service in top_services %}
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 bg-brand-100 text-brand-600 rounded-lg flex items-center justify-center text-sm font-bold">{{ forloop.counter }}</span>
+                            <div>
+                                <p class="text-sm font-semibold text-slate-900">{{ service.title }}</p>
+                                <p class="text-xs text-slate-500">{{ service.category.name }}</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">{{ service.booking_count }} bookings</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="p-6 text-center text-sm text-slate-500">No booking data yet.</div>
+            {% endif %}
+        </div>
+
+        <!-- Top Workers -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-slate-100">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-trophy text-amber-500"></i>
+                    <span>Top Workers</span>
+                </h2>
+            </div>
+            {% if top_workers %}
+                <div class="divide-y divide-slate-100">
+                    {% for worker in top_workers %}
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center text-sm font-bold">{{ forloop.counter }}</span>
+                            <div>
+                                <a href="{% url 'core:worker_profile' worker.id %}" class="text-sm font-semibold text-slate-900 hover:text-brand-600 transition-colors">{{ worker.user.get_full_name|default:worker.user.username }}</a>
+                                <p class="text-xs text-slate-500"><span class="text-amber-500"><i class="fa-solid fa-star text-[10px]"></i> {{ worker.rating }}</span> &bull; {{ worker.total_reviews_count }} reviews</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">{{ worker.jobs_done }} jobs</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="p-6 text-center text-sm text-slate-500">No completed jobs yet.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Revenue Split Visualization -->
+    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie text-purple-600"></i>
+            <span>Revenue Split Breakdown</span>
+        </h2>
+        <div class="flex items-center gap-8">
+            <div class="flex-1">
+                <div class="flex rounded-full overflow-hidden h-6 shadow-inner">
+                    <div class="bg-blue-500 h-full" style="width: 15%"></div>
+                    <div class="bg-purple-500 h-full" style="width: 15%"></div>
+                    <div class="bg-emerald-500 h-full" style="width: 70%"></div>
+                </div>
+                <div class="flex justify-between mt-3 text-xs font-semibold">
+                    <span class="text-blue-600">Platform 15% — ₹{{ total_commission }}</span>
+                    <span class="text-purple-600">Coop 15% — ₹{{ total_dividend_pool }}</span>
+                    <span class="text-emerald-600">Workers 70% — ₹{{ total_worker_payouts }}</span>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Pending Worker Verification Requests -->
     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-            <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <i class="fa-solid fa-user-check text-amber-500"></i>
                 <span>Pending Worker Verification Applications</span>
             </h2>
@@ -109,10 +240,10 @@
         {% endif %}
     </div>
 
-    <!-- Verified Local Professionals List -->
+    <!-- Verified Workers List -->
     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-            <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <i class="fa-solid fa-users text-brand-600"></i>
                 <span>Verified Local Cooperative Workers</span>
             </h2>
@@ -130,13 +261,16 @@
                             <th class="p-4">Member ID</th>
                             <th class="p-4">Availability</th>
                             <th class="p-4">Rating</th>
+                            <th class="p-4">Skills</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-sm">
                         {% for worker in verified_workers %}
                             <tr class="hover:bg-slate-50/80 transition-colors">
-                                <td class="p-4 pl-6 font-bold text-slate-900">
-                                    {{ worker.user.get_full_name|default:worker.user.username }}
+                                <td class="p-4 pl-6">
+                                    <a href="{% url 'core:worker_profile' worker.id %}" class="font-bold text-slate-900 hover:text-brand-600 transition-colors">
+                                        {{ worker.user.get_full_name|default:worker.user.username }}
+                                    </a>
                                 </td>
                                 <td class="p-4 font-mono text-xs text-slate-700">{{ worker.coop_member_id|default:"N/A" }}</td>
                                 <td class="p-4">
@@ -147,6 +281,13 @@
                                 <td class="p-4 font-bold text-amber-500">
                                     <i class="fa-solid fa-star"></i> {{ worker.rating }}
                                 </td>
+                                <td class="p-4">
+                                    <div class="flex flex-wrap gap-1">
+                                        {% for skill in worker.skills %}
+                                            <span class="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-700">{{ skill }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -156,4 +297,72 @@
     </div>
 
 </div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Booking Status Pie Chart
+    const statusCtx = document.getElementById('bookingStatusChart');
+    if (statusCtx) {
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Pending', 'Accepted', 'In Progress', 'Cancelled'],
+                datasets: [{
+                    data: [
+                        {{ booking_stats.completed|default:0 }},
+                        {{ booking_stats.pending|default:0 }},
+                        {{ booking_stats.accepted|default:0 }},
+                        {{ booking_stats.in_progress|default:0 }},
+                        {{ booking_stats.cancelled|default:0 }}
+                    ],
+                    backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ef4444'],
+                    borderWidth: 0,
+                    hoverOffset: 8,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10 } }
+                },
+                cutout: '60%',
+            }
+        });
+    }
+
+    // Monthly Revenue Bar Chart
+    const revenueCtx = document.getElementById('monthlyRevenueChart');
+    if (revenueCtx) {
+        const months = [{% for m in monthly_revenue %}'{{ m.month|date:"M Y" }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+        const grossData = [{% for m in monthly_revenue %}{{ m.gross|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}];
+        const commissionData = [{% for m in monthly_revenue %}{{ m.commission|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}];
+        const dividendData = [{% for m in monthly_revenue %}{{ m.dividend|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}];
+
+        new Chart(revenueCtx, {
+            type: 'bar',
+            data: {
+                labels: months.length ? months : ['No Data'],
+                datasets: [
+                    { label: 'Gross Revenue', data: grossData.length ? grossData : [0], backgroundColor: '#0ea5e9' },
+                    { label: 'Commission', data: commissionData.length ? commissionData : [0], backgroundColor: '#3b82f6' },
+                    { label: 'Dividend Pool', data: dividendData.length ? dividendData : [0], backgroundColor: '#8b5cf6' },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10 } }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { callback: function(val) { return '₹' + val; } } }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
 {% endblock %}

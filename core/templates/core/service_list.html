@@ -20,7 +20,7 @@
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </div>
-                    <input type="text" name="q" value="{{ search_query }}" placeholder="Search services (e.g. Plumbing, AC Repair)..." class="w-full pl-10 pr-4 py-3 bg-white text-slate-900 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <input type="text" name="q" value="{{ search_query }}" placeholder="Search services (e.g. Plumbing, AC Repair)..." class="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500">
                 </div>
                 <button type="submit" class="px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm rounded-xl transition-colors shadow-md">
                     Search Services
@@ -35,11 +35,11 @@
     <!-- Category Filter Tabs -->
     {% if categories %}
         <div class="flex items-center space-x-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
-            <a href="{% url 'core:service_list' %}" class="px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all {% if not selected_category %}bg-brand-600 text-white shadow-md shadow-brand-600/20{% else %}bg-white text-slate-700 hover:bg-slate-100 border border-slate-200{% endif %}">
+            <a href="{% url 'core:service_list' %}" class="px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all {% if not selected_category %}bg-brand-600 text-white shadow-md shadow-brand-600/20{% else %}bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700{% endif %}">
                 All Services
             </a>
             {% for cat in categories %}
-                <a href="?category={{ cat.slug }}" class="px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all {% if selected_category == cat.slug %}bg-brand-600 text-white shadow-md shadow-brand-600/20{% else %}bg-white text-slate-700 hover:bg-slate-100 border border-slate-200{% endif %}">
+                <a href="?category={{ cat.slug }}" class="px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all {% if selected_category == cat.slug %}bg-brand-600 text-white shadow-md shadow-brand-600/20{% else %}bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700{% endif %}">
                     {% if cat.icon %}<i class="{{ cat.icon }} mr-1.5"></i>{% endif %}{{ cat.name }}
                 </a>
             {% endfor %}
@@ -50,14 +50,14 @@
     {% if services %}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {% for service in services %}
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group">
                     <div class="p-6 space-y-4">
                         <!-- Header & Category -->
                         <div class="flex items-start justify-between">
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">
                                 {{ service.category.name }}
                             </span>
-                            <div class="flex items-center space-x-1 text-amber-500 text-xs font-bold bg-amber-50 px-2 py-1 rounded-md border border-amber-100">
+                            <div class="flex items-center space-x-1 text-amber-500 text-xs font-bold bg-amber-50 dark:bg-amber-950/60 px-2 py-1 rounded-md border border-amber-100 dark:border-amber-800">
                                 <i class="fa-solid fa-star"></i>
                                 <span>4.9</span>
                             </div>
@@ -65,20 +65,20 @@
 
                         <!-- Service Title & Description -->
                         <div>
-                            <h3 class="text-lg font-bold text-slate-900 group-hover:text-brand-600 transition-colors line-clamp-1">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors line-clamp-1">
                                 {{ service.title }}
                             </h3>
-                            <p class="text-xs text-slate-500 mt-2 line-clamp-3 leading-relaxed">
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-3 leading-relaxed">
                                 {{ service.description }}
                             </p>
                         </div>
                     </div>
 
                     <!-- Card Footer: Base Price & Action -->
-                    <div class="p-6 pt-0 border-t border-slate-100 bg-slate-50/50 mt-4 flex items-center justify-between">
+                    <div class="p-6 pt-0 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 mt-4 flex items-center justify-between">
                         <div>
-                            <span class="text-xs font-medium text-slate-400 block">Starting from</span>
-                            <span class="text-xl font-extrabold text-slate-900">₹{{ service.base_price }}</span>
+                            <span class="text-xs font-medium text-slate-400 dark:text-slate-400 block">Starting from</span>
+                            <span class="text-xl font-extrabold text-slate-900 dark:text-white">₹{{ service.base_price }}</span>
                         </div>
                         <a href="{% url 'core:booking_create' service.id %}" class="inline-flex items-center space-x-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs rounded-xl shadow-md shadow-brand-600/20 transition-all hover:scale-[1.02] focus:outline-none">
                             <span>Book Now</span>
@@ -90,13 +90,13 @@
         </div>
     {% else %}
         <!-- Empty State -->
-        <div class="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300 p-8 space-y-4">
-            <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto text-2xl">
+        <div class="text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 p-8 space-y-4">
+            <div class="w-16 h-16 bg-slate-100 dark:bg-slate-700 text-slate-400 rounded-full flex items-center justify-center mx-auto text-2xl">
                 <i class="fa-solid fa-toolbox"></i>
             </div>
-            <h3 class="text-lg font-bold text-slate-900">No Services Found</h3>
-            <p class="text-sm text-slate-500 max-w-sm mx-auto">We couldn't find any household services matching your filters. Try resetting your search query.</p>
-            <a href="{% url 'core:service_list' %}" class="inline-flex items-center px-4 py-2 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-700 transition-colors">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">No Services Found</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">We couldn't find any household services matching your filters. Try resetting your search query.</p>
+            <a href="{% url 'core:service_list' %}" class="inline-flex items-center px-4 py-2 bg-slate-800 dark:bg-slate-700 text-white text-xs font-semibold rounded-lg hover:bg-slate-700 transition-colors">
                 Clear Filters
             </a>
         </div>
