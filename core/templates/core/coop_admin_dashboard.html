@@ -1,0 +1,159 @@
+{% extends "core/base.html" %}
+
+{% block title %}Coop Admin Dashboard - KaamConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Dashboard Title Banner -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-8 rounded-3xl shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div>
+            <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 mb-2">
+                <i class="fa-solid fa-building-columns"></i>
+                <span>Cooperative Management System</span>
+            </span>
+            <h1 class="text-3xl font-extrabold tracking-tight">Coop Executive Dashboard</h1>
+            <p class="text-slate-300 text-sm mt-1">Worker verification, platform analytics, commission fees, and dividend pool allocations.</p>
+        </div>
+    </div>
+
+    <!-- Community Financial Overview Metrics -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gross Platform Revenue</span>
+            <div class="text-2xl font-extrabold text-slate-900">₹{{ total_gross }}</div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Platform Commission</span>
+            <div class="text-2xl font-extrabold text-blue-600">₹{{ total_commission }}</div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Dividend Pool Allocation</span>
+            <div class="text-2xl font-extrabold text-purple-600">₹{{ total_dividend_pool }}</div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Worker Payouts</span>
+            <div class="text-2xl font-extrabold text-emerald-600">₹{{ total_worker_payouts }}</div>
+        </div>
+    </div>
+
+    <!-- Pending Worker Verification Requests -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                <i class="fa-solid fa-user-check text-amber-500"></i>
+                <span>Pending Worker Verification Applications</span>
+            </h2>
+            <span class="text-xs font-bold bg-amber-50 text-amber-700 px-3 py-1 rounded-full border border-amber-200">
+                {{ pending_workers.count }} Pending
+            </span>
+        </div>
+
+        {% if pending_workers %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                            <th class="p-4 pl-6">Worker Name</th>
+                            <th class="p-4">Coop Member ID</th>
+                            <th class="p-4">Hourly Rate</th>
+                            <th class="p-4">Skills</th>
+                            <th class="p-4 pr-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-sm">
+                        {% for worker in pending_workers %}
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="p-4 pl-6 font-bold text-slate-900">
+                                    {{ worker.user.get_full_name|default:worker.user.username }}
+                                    <div class="text-xs font-normal text-slate-500">{{ worker.user.email }}</div>
+                                </td>
+                                <td class="p-4 font-mono text-xs font-semibold text-slate-700">
+                                    {{ worker.coop_member_id|default:"N/A" }}
+                                </td>
+                                <td class="p-4 font-bold text-slate-900">₹{{ worker.hourly_rate|default:"0.00" }}</td>
+                                <td class="p-4">
+                                    <div class="flex flex-wrap gap-1">
+                                        {% for skill in worker.skills %}
+                                            <span class="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-700 border border-slate-200">{{ skill }}</span>
+                                        {% empty %}
+                                            <span class="text-slate-400 text-xs">None listed</span>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td class="p-4 pr-6 text-right">
+                                    <form method="POST" action="{% url 'core:coop_admin_dashboard' %}" class="inline-flex space-x-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="worker_id" value="{{ worker.id }}">
+                                        <button type="submit" name="action" value="verify" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg transition-colors">
+                                            Verify
+                                        </button>
+                                        <button type="submit" name="action" value="reject" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs rounded-lg transition-colors">
+                                            Reject
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-12 text-slate-500 text-sm">
+                <i class="fa-solid fa-check-double text-3xl text-slate-300 block mb-2"></i>
+                No pending worker verification requests.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Verified Local Professionals List -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                <i class="fa-solid fa-users text-brand-600"></i>
+                <span>Verified Local Cooperative Workers</span>
+            </h2>
+            <span class="text-xs font-bold bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full border border-emerald-200">
+                {{ verified_workers.count }} Verified
+            </span>
+        </div>
+
+        {% if verified_workers %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                            <th class="p-4 pl-6">Worker Name</th>
+                            <th class="p-4">Member ID</th>
+                            <th class="p-4">Availability</th>
+                            <th class="p-4">Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-sm">
+                        {% for worker in verified_workers %}
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="p-4 pl-6 font-bold text-slate-900">
+                                    {{ worker.user.get_full_name|default:worker.user.username }}
+                                </td>
+                                <td class="p-4 font-mono text-xs text-slate-700">{{ worker.coop_member_id|default:"N/A" }}</td>
+                                <td class="p-4">
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold {% if worker.availability_status == 'AVAILABLE' %}bg-emerald-100 text-emerald-800 border border-emerald-200{% elif worker.availability_status == 'BUSY' %}bg-amber-100 text-amber-800 border border-amber-200{% else %}bg-slate-100 text-slate-700 border border-slate-200{% endif %}">
+                                        {{ worker.get_availability_status_display }}
+                                    </span>
+                                </td>
+                                <td class="p-4 font-bold text-amber-500">
+                                    <i class="fa-solid fa-star"></i> {{ worker.rating }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

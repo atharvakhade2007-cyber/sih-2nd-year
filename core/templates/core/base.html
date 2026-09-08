@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}KaamConnect - Cooperative Gig Services Platform{% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d',
+                        },
+                        coop: {
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome CDN for modern icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="flex flex-col min-h-full font-sans text-slate-800 antialiased">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top Nav">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo & Brand Name -->
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'core:service_list' %}" class="flex items-center space-x-2">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-brand-500/20">
+                            <i class="fa-solid fa-handshake-angle"></i>
+                        </div>
+                        <span class="text-xl font-extrabold tracking-tight text-slate-900">Kaam<span class="text-brand-600">Connect</span></span>
+                    </a>
+                    <span class="hidden md:inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        Cooperative Platform
+                    </span>
+                </div>
+
+                <!-- Desktop Navigation Links -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="{% url 'core:service_list' %}" class="text-sm font-medium text-slate-700 hover:text-brand-600 transition-colors">
+                        <i class="fa-solid fa-grid-2 mr-1"></i> Browse Services
+                    </a>
+                    
+                    {% if user.is_authenticated %}
+                        {% if user.role == "PROVIDER" %}
+                            <a href="{% url 'core:worker_dashboard' %}" class="text-sm font-medium text-slate-700 hover:text-brand-600 transition-colors">
+                                <i class="fa-solid fa-briefcase mr-1"></i> Provider Dashboard
+                            </a>
+                        {% elif user.role == "COOP_ADMIN" or user.role == "PLATFORM_ADMIN" %}
+                            <a href="{% url 'core:coop_admin_dashboard' %}" class="text-sm font-medium text-slate-700 hover:text-brand-600 transition-colors">
+                                <i class="fa-solid fa-chart-pie mr-1"></i> Coop Dashboard
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <!-- User Profile / Auth Actions -->
+                <div class="hidden md:flex items-center space-x-4">
+                    {% if user.is_authenticated %}
+                        <div class="flex items-center space-x-3 bg-slate-100 py-1.5 px-3 rounded-full border border-slate-200">
+                            <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-sm">
+                                {{ user.username|slice:":1"|upper }}
+                            </div>
+                            <div class="text-xs">
+                                <p class="font-semibold text-slate-900 leading-none">{{ user.get_full_name|default:user.username }}</p>
+                                <p class="text-slate-500 capitalize leading-tight mt-0.5">{{ user.get_role_display }}</p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2">Log In</a>
+                        <a href="{% url 'login' %}" class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg shadow hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all">
+                            Join Cooperative
+                        </a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="flex md:hidden">
+                    <button id="mobile-menu-btn" type="button" class="text-slate-600 hover:text-slate-900 focus:outline-none p-2 rounded-lg hover:bg-slate-100" aria-label="Toggle Menu">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Dropdown -->
+            <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200 py-4 space-y-3">
+                <a href="{% url 'core:service_list' %}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100">Browse Services</a>
+                {% if user.is_authenticated %}
+                    {% if user.role == "PROVIDER" %}
+                        <a href="{% url 'core:worker_dashboard' %}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100">Provider Dashboard</a>
+                    {% elif user.role == "COOP_ADMIN" or user.role == "PLATFORM_ADMIN" %}
+                        <a href="{% url 'core:coop_admin_dashboard' %}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100">Coop Admin Dashboard</a>
+                    {% endif %}
+                {% else %}
+                    <div class="pt-2 border-t border-slate-200 flex flex-col space-y-2">
+                        <a href="#" class="w-full text-center px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg">Log In</a>
+                        <a href="#" class="w-full text-center px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg">Join Cooperative</a>
+                    </div>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <!-- Flash Messages Container -->
+    {% if messages %}
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            {% for message in messages %}
+                <div class="p-4 rounded-xl shadow-sm text-sm font-medium flex items-center justify-between {% if message.tags == 'error' %}bg-rose-50 text-rose-800 border border-rose-200{% else %}bg-emerald-50 text-emerald-800 border border-emerald-200{% endif %}">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-rose-500{% else %}fa-circle-check text-emerald-500{% endif %}"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer Component -->
+    <footer class="bg-slate-900 text-slate-300 mt-16 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="space-y-4 md:col-span-1">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white font-bold text-lg">
+                            <i class="fa-solid fa-handshake-angle"></i>
+                        </div>
+                        <span class="text-lg font-extrabold text-white">KaamConnect</span>
+                    </div>
+                    <p class="text-sm text-slate-400">Empowering gig service providers through fair cooperative platform governance and equitable profit sharing.</p>
+                </div>
+                <div>
+                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="{% url 'core:service_list' %}" class="hover:text-white transition-colors">Household Services</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Become a Service Provider</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Cooperative Profit Sharing</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Cooperative Values</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center space-x-2"><i class="fa-solid fa-check text-brand-500 text-xs"></i> <span>Transparent Dividends</span></li>
+                        <li class="flex items-center space-x-2"><i class="fa-solid fa-check text-brand-500 text-xs"></i> <span>Worker Ownership</span></li>
+                        <li class="flex items-center space-x-2"><i class="fa-solid fa-check text-brand-500 text-xs"></i> <span>Fair Local Wages</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Support & Legal</h3>
+                    <p class="text-sm text-slate-400 mb-3">Questions about our cooperative platform?</p>
+                    <a href="mailto:support@kaamconnect.coop" class="inline-flex items-center space-x-2 text-sm text-brand-400 hover:text-brand-300">
+                        <i class="fa-solid fa-envelope"></i> <span>support@kaamconnect.coop</span>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
+                &copy; 2026 KaamConnect Cooperative Platform. All rights reserved. Built with Django & Tailwind CSS.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Menu JS Toggle -->
+    <script>
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        if (btn && menu) {
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

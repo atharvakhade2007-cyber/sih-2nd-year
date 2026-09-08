@@ -1,0 +1,84 @@
+{% extends "core/base.html" %}
+
+{% block title %}Book {{ service.title }} - KaamConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+
+    <!-- Header / Service Summary Card -->
+    <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-brand-900 text-white p-8 rounded-3xl shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="space-y-2">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                {{ service.category.name }}
+            </span>
+            <h1 class="text-3xl font-extrabold tracking-tight">{{ service.title }}</h1>
+            <p class="text-slate-300 text-sm max-w-xl">{{ service.description }}</p>
+        </div>
+        <div class="bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 text-right">
+            <span class="text-xs font-medium text-slate-300 block">Total Base Price</span>
+            <span class="text-3xl font-extrabold text-white">₹{{ service.base_price }}</span>
+        </div>
+    </div>
+
+    <!-- Booking Form Card -->
+    <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+        <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+            <i class="fa-solid fa-calendar-check text-brand-600"></i>
+            <span>Complete Booking Details</span>
+        </h2>
+
+        <form method="POST" action="{% url 'core:booking_create' service.id %}" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Scheduled Date & Time -->
+            <div>
+                <label for="scheduled_time" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                    Scheduled Date & Time *
+                </label>
+                <input type="datetime-local" id="scheduled_time" name="scheduled_time" required class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+            </div>
+
+            <!-- Service Address -->
+            <div>
+                <label for="service_address" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                    Service Address *
+                </label>
+                <textarea id="service_address" name="service_address" rows="3" required placeholder="Enter full service location address..." class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all"></textarea>
+            </div>
+
+            <!-- Optional Preferred Worker Selection -->
+            <div>
+                <label for="worker_id" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                    Preferred Verified Worker (Optional)
+                </label>
+                <select id="worker_id" name="worker_id" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all cursor-pointer">
+                    <option value="">-- Assign Any Available Verified Professional --</option>
+                    {% for worker in available_workers %}
+                        <option value="{{ worker.id }}">
+                            {{ worker.user.get_full_name|default:worker.user.username }} (Rating: {{ worker.rating }} ★)
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Special Instructions -->
+            <div>
+                <label for="special_instructions" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                    Special Instructions or Notes (Optional)
+                </label>
+                <textarea id="special_instructions" name="special_instructions" rows="2" placeholder="Any specific requirements for the service provider..." class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-4 flex items-center justify-end space-x-4">
+                <a href="{% url 'core:service_list' %}" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="px-8 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-brand-600/30 transition-all hover:scale-[1.01]">
+                    Confirm & Request Booking
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

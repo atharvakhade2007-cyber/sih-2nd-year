@@ -1,0 +1,105 @@
+{% extends "core/base.html" %}
+
+{% block title %}Explore Household Services - KaamConnect{% endblock %}
+
+{% block content %}
+<!-- Hero Header Section -->
+<section class="bg-gradient-to-br from-slate-900 via-slate-800 to-brand-900 text-white py-12 px-4 sm:px-6 lg:px-8 mb-10 shadow-lg">
+    <div class="max-w-7xl mx-auto text-center space-y-4">
+        <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-300 border border-brand-500/30">
+            <i class="fa-solid fa-shield-heart"></i>
+            <span>100% Verified Local Professionals</span>
+        </span>
+        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Reliable Household Services for Your Home</h1>
+        <p class="max-w-2xl mx-auto text-slate-300 text-sm sm:text-base">Support local worker cooperatives while getting top-quality plumbing, electrical, cleaning, and maintenance services.</p>
+        
+        <!-- Search & Filter Bar -->
+        <div class="max-w-3xl mx-auto pt-4">
+            <form method="GET" action="{% url 'core:service_list' %}" class="flex flex-col sm:flex-row gap-2 bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/20">
+                <div class="relative flex-grow">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <input type="text" name="q" value="{{ search_query }}" placeholder="Search services (e.g. Plumbing, AC Repair)..." class="w-full pl-10 pr-4 py-3 bg-white text-slate-900 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <button type="submit" class="px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm rounded-xl transition-colors shadow-md">
+                    Search Services
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Main Container -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Category Filter Tabs -->
+    {% if categories %}
+        <div class="flex items-center space-x-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
+            <a href="{% url 'core:service_list' %}" class="px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all {% if not selected_category %}bg-brand-600 text-white shadow-md shadow-brand-600/20{% else %}bg-white text-slate-700 hover:bg-slate-100 border border-slate-200{% endif %}">
+                All Services
+            </a>
+            {% for cat in categories %}
+                <a href="?category={{ cat.slug }}" class="px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all {% if selected_category == cat.slug %}bg-brand-600 text-white shadow-md shadow-brand-600/20{% else %}bg-white text-slate-700 hover:bg-slate-100 border border-slate-200{% endif %}">
+                    {% if cat.icon %}<i class="{{ cat.icon }} mr-1.5"></i>{% endif %}{{ cat.name }}
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Service Cards Grid -->
+    {% if services %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for service in services %}
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group">
+                    <div class="p-6 space-y-4">
+                        <!-- Header & Category -->
+                        <div class="flex items-start justify-between">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                {{ service.category.name }}
+                            </span>
+                            <div class="flex items-center space-x-1 text-amber-500 text-xs font-bold bg-amber-50 px-2 py-1 rounded-md border border-amber-100">
+                                <i class="fa-solid fa-star"></i>
+                                <span>4.9</span>
+                            </div>
+                        </div>
+
+                        <!-- Service Title & Description -->
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900 group-hover:text-brand-600 transition-colors line-clamp-1">
+                                {{ service.title }}
+                            </h3>
+                            <p class="text-xs text-slate-500 mt-2 line-clamp-3 leading-relaxed">
+                                {{ service.description }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Card Footer: Base Price & Action -->
+                    <div class="p-6 pt-0 border-t border-slate-100 bg-slate-50/50 mt-4 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-medium text-slate-400 block">Starting from</span>
+                            <span class="text-xl font-extrabold text-slate-900">₹{{ service.base_price }}</span>
+                        </div>
+                        <a href="{% url 'core:booking_create' service.id %}" class="inline-flex items-center space-x-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs rounded-xl shadow-md shadow-brand-600/20 transition-all hover:scale-[1.02] focus:outline-none">
+                            <span>Book Now</span>
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300 p-8 space-y-4">
+            <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto text-2xl">
+                <i class="fa-solid fa-toolbox"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900">No Services Found</h3>
+            <p class="text-sm text-slate-500 max-w-sm mx-auto">We couldn't find any household services matching your filters. Try resetting your search query.</p>
+            <a href="{% url 'core:service_list' %}" class="inline-flex items-center px-4 py-2 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-700 transition-colors">
+                Clear Filters
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
